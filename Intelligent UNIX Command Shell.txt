@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main()
+{
+    char str[100];
+    char *p[10];
+    int i;
+    int pid;
+
+    while(1)
+    {
+        printf("myshell$ ");
+        fflush(stdout);
+
+        /* Read command */
+        fgets(str, 100, stdin);
+
+        /* Remove \n */
+        str[strlen(str)-1] = '\0';
+
+        /* Exit */
+        if(strcmp(str, "exit") == 0)
+            break;
+
+        /* Convert command into words */
+        i = 0;
+
+        p[i] = strtok(str, " ");
+
+        while(p[i] != NULL)
+        {
+            i++;
+            p[i] = strtok(NULL, " ");
+        }
+
+        /* Create child */
+        pid = fork();
+
+        if(pid == 0)
+        {
+            /* Child */
+            execvp(p[0], p);
+
+            perror("execvp");
+        }
+        else
+        {
+            /* Parent */
+            wait(NULL);
+        }
+    }
+
+    return 0;
+}
